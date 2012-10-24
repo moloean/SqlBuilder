@@ -61,6 +61,14 @@ namespace Builder
         {
             return SqlStatement.ToString();
         }
+
+        protected void AddKeyword(string arg)
+        {
+            if (SqlStatement.Length > 0)
+                SqlStatement.Append(" ");
+
+            SqlStatement.AppendFormat("{0} {1}", Name, arg);
+        }
     }
 
     public class SqlBuilder : SqlKeyword
@@ -87,14 +95,28 @@ namespace Builder
 
         public SqlSelect(StringBuilder sqlStatement, string arg)
         {
-            SqlStatement = sqlStatement;
-            SqlStatement.AppendFormat("{0} {1}", Name, arg);
+            sqlStatement = sqlStatement;
+            AddKeyword(arg);
         }
 
-        public void From(string arg)
+        public SqlFrom From(string arg)
         {
-            SqlStatement.AppendFormat(" {0} {1}", "FROM", arg);
+            return new SqlFrom(SqlStatement, arg);
         }
         
+    }
+
+    public class SqlFrom : SqlKeyword
+    {
+        public SqlFrom(StringBuilder sqlStatement, string arg)
+        {
+            SqlStatement = sqlStatement;
+            AddKeyword(arg);
+        }
+
+        protected override string Name
+        {
+            get { return "FROM"; }
+        }
     }
 }
