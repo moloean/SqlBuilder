@@ -48,6 +48,21 @@ namespace Builder
             Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person"));
         }
 
+        [Test]
+        public void ToString_WhenWhereIsCalledWithArgument_returnTheSqlExpesonWithArgumetn()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            sqlBuilder.Select("*")
+                .From("Person").Where("Name = 'Morten'");
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person WHERE Name = 'Morten'"));
+        }
+
     }
 
 
@@ -137,6 +152,19 @@ namespace Builder
        protected override string Name
         {
             get { return "FROM"; }
+        }
+
+        public SqlWhere Where(string arg)
+        {
+           return AddKeyword<SqlWhere>(arg);
+        }
+    }
+
+    public class SqlWhere : SqlKeyword
+    {
+        protected override string Name
+        {
+            get { return "WHERE"; }
         }
     }
 }
