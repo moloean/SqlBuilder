@@ -38,7 +38,8 @@ namespace Builder
         {
             // Arrange
             var sqlBuilder = new SqlBuilder();
-            sqlBuilder.Select("*");
+            sqlBuilder.Select("*")
+                .From("Person");
 
             // Act
             var sqlExpresion = sqlBuilder.ToString();
@@ -49,18 +50,53 @@ namespace Builder
 
     }
 
-    public class SqlBuilder
+
+    public abstract class SqlKeyword
     {
-        private string _sqlStatement = string.Empty;
+        protected StringBuilder SqlStatement { get; set; }
+
+        protected abstract string Name { get; }
 
         public override string ToString()
         {
-            return _sqlStatement;
+            return SqlStatement.ToString();
+        }
+    }
+
+    public class SqlBuilder : SqlKeyword
+    {
+        public SqlBuilder()
+        {
+            SqlStatement = new StringBuilder();
         }
 
-        public void Select(string arg)
+        public SqlSelect Select(string arg)
         {
-            _sqlStatement = string.Format("{0} {1}", "SELECT", arg);
+            SqlStatement.AppendFormat("{0} {1}", Name, arg);
+            return new SqlSelect(SqlStatement);
+        }
+
+        protected override string Name
+        {
+            get { return "SELECT"; }
+        }
+    }
+
+    public class SqlSelect : SqlKeyword
+    {
+        public SqlSelect(StringBuilder sqlStatement)
+        {
+            SqlStatement = sqlStatement;
+        }
+
+        public void From(string arg)
+        {
+            SqlStatement.AppendFormat(" {0} {1}", Name, arg);
+        }
+
+        protected override string Name
+        {
+            get { return "FROM"; }
         }
     }
 }
