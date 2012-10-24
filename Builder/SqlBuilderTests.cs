@@ -72,31 +72,30 @@ namespace Builder
 
         public SqlSelect Select(string arg)
         {
-            SqlStatement.AppendFormat("{0} {1}", Name, arg);
-            return new SqlSelect(SqlStatement);
+            return new SqlSelect(SqlStatement, arg);
         }
 
         protected override string Name
         {
-            get { return "SELECT"; }
+            get { return string.Empty; }
         }
     }
 
     public class SqlSelect : SqlKeyword
     {
-        public SqlSelect(StringBuilder sqlStatement)
+        protected override string Name {get { return "SELECT"; }}
+
+        public SqlSelect(StringBuilder sqlStatement, string arg)
         {
             SqlStatement = sqlStatement;
+            SqlStatement.AppendFormat("{0} {1}", Name, arg);
         }
 
         public void From(string arg)
         {
-            SqlStatement.AppendFormat(" {0} {1}", Name, arg);
+            SqlStatement.AppendFormat(" {0} {1}", "FROM", arg);
         }
 
-        protected override string Name
-        {
-            get { return "FROM"; }
-        }
+        
     }
 }
