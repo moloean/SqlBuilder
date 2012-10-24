@@ -108,6 +108,41 @@ namespace Builder
             Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER JOIN Address ON Address.PostCode = Person.PostCode"));
         }
 
+        [Test]
+        public void ToString_WhenCalledWhereAfterOn_AddWherToTheSqlExpreson()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            sqlBuilder.Select("*").From("Person")
+                .Inner.Join("Address").On("Address.PostCode = Person.PostCode")
+                .Where("Name = 'Morten'");
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER JOIN Address ON Address.PostCode = Person.PostCode WHERE Name = 'Morten'"));
+        }
+
+
+        [Test]
+        public void ToString_WhenCalledInnerAfterOn_AddJoinToTheSqlExpreson()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            sqlBuilder.Select("*").From("Person")
+                .Inner.Join("Address").On("Address.PostCode = Person.PostCode")
+                .Inner.Join("Table2").On("Table2.PersonId = Person.Id");
+                
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER JOIN Address ON Address.PostCode = Person.PostCode INNER JOIN Table2 ON Table2.PersonId = Person.Id"));
+        }
+
+
     }
 
     public class SqlStatement
@@ -247,6 +282,9 @@ namespace Builder
         {
             get { return "ON"; }
         }
+
+        public SqlInner Inner {get { return AddKeyword<SqlInner>(); }}
+        public SqlWhere Where(string arg) {return AddKeyword<SqlWhere>(arg);}
     }
 
     public class SqlWhere : SqlKeyword
