@@ -51,10 +51,37 @@ namespace Builder
     }
 
 
+
+    public class SqlStatement
+    {
+        private readonly StringBuilder _statement = new StringBuilder();
+        public void AddToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return;
+
+            if (_statement.Length > 0)
+                _statement.Append(" ");
+
+            _statement.Append(token.Trim());
+        }
+
+        public override string ToString()
+        {
+            return _statement.ToString();
+        }
+    }
+
     public abstract class SqlKeyword
     {
-        protected StringBuilder SqlStatement { get; set; }
+        protected SqlKeyword() {}
 
+        protected SqlKeyword(SqlStatement sqlStatement)
+        {
+            SqlStatement = sqlStatement;
+        }
+
+        private SqlStatement SqlStatement { get; set; }
         protected abstract string Name { get; }
 
         public override string ToString()
@@ -71,44 +98,26 @@ namespace Builder
             return sqlKeyword;
         }
 
-        private void AddToken(string token)
-        {
-            if (string.IsNullOrWhiteSpace(token))
-                return;
-
-            if (SqlStatement.Length > 0)
-                SqlStatement.Append(" ");
-
-            SqlStatement.Append(token.Trim());
-
-        }
-
-        private void Init(StringBuilder sqlStatement, string arg)
+        private void Init(SqlStatement sqlStatement, string arg)
         {
             SqlStatement = sqlStatement;
             
             if(!string.IsNullOrWhiteSpace(Name))
-                AddToken(Name.ToUpper());
-            
-            AddToken(arg);
+                SqlStatement.AddToken(Name.ToUpper());
+
+            SqlStatement.AddToken(arg);
         }
     }
 
     public class SqlBuilder : SqlKeyword
     {
-        public SqlBuilder()
-        {
-            SqlStatement = new StringBuilder();
-        }
+        protected override string Name{get { return string.Empty; }}
+
+        public SqlBuilder():base(new SqlStatement()){}
 
         public SqlSelect Select(string arg)
         {
             return AddKeyword<SqlSelect>(arg);
-        }
-
-        protected override string Name
-        {
-            get { return string.Empty; }
         }
     }
 
