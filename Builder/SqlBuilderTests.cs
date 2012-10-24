@@ -62,12 +62,35 @@ namespace Builder
             return SqlStatement.ToString();
         }
 
-        protected void AddKeyword(string arg)
+        protected T AddKeyword<T>(string arg) 
+            where T : SqlKeyword, new()
         {
+            var sqlKeyword = new T();
+            sqlKeyword.Init(SqlStatement, arg);
+
+            return sqlKeyword;
+        }
+
+        private void AddToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return;
+
             if (SqlStatement.Length > 0)
                 SqlStatement.Append(" ");
 
-            SqlStatement.AppendFormat("{0} {1}", Name, arg);
+            SqlStatement.Append(token.Trim());
+
+        }
+
+        private void Init(StringBuilder sqlStatement, string arg)
+        {
+            SqlStatement = sqlStatement;
+            
+            if(!string.IsNullOrWhiteSpace(Name))
+                AddToken(Name.ToUpper());
+            
+            AddToken(arg);
         }
     }
 
@@ -80,7 +103,7 @@ namespace Builder
 
         public SqlSelect Select(string arg)
         {
-            return new SqlSelect(SqlStatement, arg);
+            return AddKeyword<SqlSelect>(arg);
         }
 
         protected override string Name
@@ -92,29 +115,17 @@ namespace Builder
     public class SqlSelect : SqlKeyword
     {
         protected override string Name {get { return "SELECT"; }}
-
-        public SqlSelect(StringBuilder sqlStatement, string arg)
-        {
-            sqlStatement = sqlStatement;
-            AddKeyword(arg);
-        }
-
+        
         public SqlFrom From(string arg)
         {
-            return new SqlFrom(SqlStatement, arg);
+            return AddKeyword<SqlFrom>(arg);
         }
         
     }
 
     public class SqlFrom : SqlKeyword
     {
-        public SqlFrom(StringBuilder sqlStatement, string arg)
-        {
-            SqlStatement = sqlStatement;
-            AddKeyword(arg);
-        }
-
-        protected override string Name
+       protected override string Name
         {
             get { return "FROM"; }
         }
