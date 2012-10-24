@@ -95,7 +95,6 @@ namespace Builder
         {
             SqlStatement.AppendFormat(" {0} {1}", "FROM", arg);
         }
-
         
     }
 }
