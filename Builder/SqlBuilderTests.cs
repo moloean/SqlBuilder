@@ -49,7 +49,7 @@ namespace Builder
         }
 
         [Test]
-        public void ToString_WhenWhereIsCalledWithArgument_returnTheSqlExpesonWithArgumetn()
+        public void ToString_WhenWhereIsCalledWithArgument_returnTheSqlExpesonAndAppendWithAndArgumetn()
         {
             // Arrange
             var sqlBuilder = new SqlBuilder();
@@ -63,9 +63,52 @@ namespace Builder
             Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person WHERE Name = 'Morten'"));
         }
 
+        [Test]
+        public void ToString_WhenCalledInner_AddInnerToTheSqlExpreson()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            var sqlInner = sqlBuilder.Select("*").From("Person").Inner;
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER"));
+        }
+
+
+        [Test]
+        public void ToString_WhenCalledJoin_AddJoinToTheSqlExpreson()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            var sqlInner = sqlBuilder.Select("*").From("Person")
+                .Inner.Join("Address");
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER JOIN Address"));
+        }
+
+        [Test]
+        public void ToString_WhenCalledOn_AddOnToTheSqlExpreson()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            sqlBuilder.Select("*").From("Person")
+                .Inner.Join("Address").On("Address.PostCode = Person.PostCode");
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person INNER JOIN Address ON Address.PostCode = Person.PostCode"));
+        }
+
     }
-
-
 
     public class SqlStatement
     {
@@ -122,6 +165,12 @@ namespace Builder
 
             SqlStatement.AddToken(arg);
         }
+
+        protected T AddKeyword<T>()
+            where T : SqlKeyword, new()
+        {
+            return AddKeyword<T>(string.Empty);
+        }
     }
 
     public class SqlBuilder : SqlKeyword
@@ -154,9 +203,49 @@ namespace Builder
             get { return "FROM"; }
         }
 
+        public SqlInner Inner
+        {
+            get { return AddKeyword<SqlInner>(); }
+            
+        }
+
         public SqlWhere Where(string arg)
         {
            return AddKeyword<SqlWhere>(arg);
+        }
+    }
+
+    public class SqlInner : SqlKeyword
+    {
+        protected override string Name
+        {
+            get { return "INNER"; }
+        }
+
+        public SqlJoin Join(string tableName)
+        {
+            return AddKeyword<SqlJoin>(tableName);
+        }
+    }
+
+    public class SqlJoin : SqlKeyword
+    {
+        protected override string Name
+        {
+            get { return "JOIN"; }
+        }
+
+        public SqlOn On(string joinPredicate)
+        {
+            return AddKeyword<SqlOn>(joinPredicate);
+        }
+    }
+
+    public class SqlOn : SqlKeyword
+    {
+        protected override string Name
+        {
+            get { return "ON"; }
         }
     }
 
