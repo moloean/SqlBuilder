@@ -32,6 +32,21 @@ namespace Builder
             // Assert
             Assert.That(sqlExpresion, Is.EqualTo("SELECT *"));
         }
+
+        [Test]
+        public void ToString_WhenFromIsCalledWithArgument_returnTheSqlExpresonWithFromAndArgument()
+        {
+            // Arrange
+            var sqlBuilder = new SqlBuilder();
+            sqlBuilder.Select("*");
+
+            // Act
+            var sqlExpresion = sqlBuilder.ToString();
+
+            // Assert
+            Assert.That(sqlExpresion, Is.EqualTo("SELECT * FROM Person"));
+        }
+
     }
 
     public class SqlBuilder
